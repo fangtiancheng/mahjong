@@ -269,7 +269,7 @@ void MJScore::Clear_WithoutRule()
 }
 
 
-//牌の数カウント
+//牌の数カウント 计算牌数
 int MJScore::Check_Haino(){
 	int i,cnt=0;
 	for(i=0;i<=37;i++){
@@ -377,23 +377,26 @@ void MJScore::Run()
 
 	//赤牌正規化
 	Tehai_Normalize();
-
 	//牌の数が14でない：エラーコード=1
 	if(Check_Haino()!=14){
 		ErrorCode=HAIGA14MAIJYANAI;
 		return;
 	}
+	DEBUG
 	//あがり牌情報がおかしい：エラーコード=2
 	// v1.071 あがり牌が赤だった場合の不具合修正
 	if(Agarihai==0 || TehaiNormalize[Agarihai]==0){
 		ErrorCode=AGARIHAIGAOKASII;
 		return;
 	}
-
+    DEBUG
 	//あがっていない：エラーコード=3
 	NormalSyanten();
 	TiitoituSyanten();
 	KokusiSyanten();
+	cout << "Nsyan = " << Nsyan << endl;
+	cout << "Tsyan = " << Tsyan << endl;
+	cout << "Ksyan = " << Ksyan << endl;
 	if(!( Nsyan==-1||Tsyan==-1||Ksyan==-1)){
 		ErrorCode=AGATTEINAI;
 		return;
@@ -1834,7 +1837,7 @@ void MJScore::NormalSyanten()
 	nsayn_temp = 0;
 	syanten_normal = 8; 
 
-	Fuuro_Suu();//フーロ数取得
+	Fuuro_Suu();//フーロ数取得 获取副露数
 
 	for(int i = 1;i < 38;i++)
 	{

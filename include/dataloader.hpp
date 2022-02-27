@@ -1,5 +1,5 @@
-#ifndef _DATALOADER_HPP_
-#define _DATALOADER_HPP_
+#ifndef __DATALOADER__
+#define __DATALOADER__
 
 
 

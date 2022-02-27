@@ -2,6 +2,7 @@
 麻雀得点計算C++ソース「MJScore.h」ver1.0 初出
 使い方:http://cmj3.web.fc2.com/index.htm#mjscore
 */
+#define DEBUG printf("%s:%d\n", __FILE__, __LINE__);
 #ifndef __MJSCORE__
 #define __MJSCORE__
 
@@ -18,7 +19,7 @@ using namespace std;
 
 //本体の定義
 class MJScore{
-private:
+protected:
 		//汎用
 		int Tehai[50]; //手牌
 		int TehaiNormalize[50];	//手牌(赤牌を統合)
@@ -286,94 +287,94 @@ public:
 		//***** ルール入力 规则输入
 
 		//赤牌有り 是否有红宝牌
-		void Avail_Akahai(bool arg){
+		inline void Avail_Akahai(bool arg){
 			Akahai=arg;
 		}
 
 		//クイタン有り
-		void Avail_Kuitan(bool arg){
+		inline void Avail_Kuitan(bool arg){
 			Kuitan=arg;
 		}
 
 		//満貫切り上げ有り
-		void Avail_ManganKiriage(bool arg){
+		inline void Avail_ManganKiriage(bool arg){
 			ManganKiriage=arg;
 		}
 
 		//場千五有り
-		void Avail_Ba1500(bool arg){
+		inline void Avail_Ba1500(bool arg){
 			Ba1500=arg;
 		}
 
 		//国士13面待ちダブル役満有り 国士无双13面是否双倍役满
-		void Avail_DoubleKokushi13(bool arg){
+		inline void Avail_DoubleKokushi13(bool arg){
 			DoubleKokushi13=arg;
 		}
 
 		//九連宝燈9面待ちダブル役満有り 纯正九莲宝灯是否双倍役满
-		void Avail_DoubleTyuuren9(bool arg){
+		inline void Avail_DoubleTyuuren9(bool arg){
 			DoubleTyuuren9=arg;
 		}
 
 		//大四喜ダブル役満有り 大四喜是否双倍役满
-		void Avail_DoubleDaisuusii(bool arg){
+		inline void Avail_DoubleDaisuusii(bool arg){
 			DoubleDaisuusii=arg;
 		}
 
 		//四暗刻単騎ダブル役満有り 四暗刻单骑是否双倍役满
-		void Avail_DoubleSuttan(bool arg){
+		inline void Avail_DoubleSuttan(bool arg){
 			DoubleSuttan=arg;
 		}
 
 		//***** 手牌等入力
 
 		//非フーロ牌入力 输入手牌
-		void Set_Tehai(int t[]){
+		inline void Set_Tehai(int t[]){
 			memcpy(Tehai,t,sizeof(int)*41);
 		}
 
 		//フーロ牌入力 输入副露
-		void Set_Fuuro(int f[]){
+		inline void Set_Fuuro(int f[]){
 			memcpy(Fuuro,f,sizeof(int)*20);
 		}
 
 		//ドラ牌入力 输入宝牌
-		void Set_Dora(int d[]){
+		inline void Set_Dora(int d[]){
 			memcpy(Dora,d,sizeof(int)*9);
 		}
 
 		//自風
-		void Set_Jikaze(int arg){
+		inline void Set_Jikaze(int arg){
 			Jikaze=arg;
 		}
 
 		//場風
-		void Set_Bakaze(int arg){
+		inline void Set_Bakaze(int arg){
 			Bakaze=arg;
 		}
 
 		//あがり牌
-		void Set_Agarihai(int arg){
+		inline void Set_Agarihai(int arg){
 			Agarihai=arg;
 		}
 
 		//ツモあがり 自摸
-		void Set_Tumoagari(int arg){
+		inline void Set_Tumoagari(int arg){
 			Tumo=arg;
 		}
 
 		//N本場
-		void Set_Honba(int arg){
+		inline void Set_Honba(int arg){
 			Honba=arg;
 		}
 
 		//供託リーチ
-		void Set_KyoutakuRIichi(int arg){
+		inline void Set_KyoutakuRIichi(int arg){
 			KyoutakuRiichi=arg;
 		}
     
         //ドラ数外部入力 v1.03 红宝牌数量
-        void Set_Dorasuu(int arg){
+        inline void Set_Dorasuu(int arg){
             inputteddora=arg;
         }
     
@@ -381,47 +382,47 @@ public:
 		//***** 以下の偶然役は成立時のみフラグをセットします
 
 		//リーチ 立直
-		void Is_Riichi(bool arg){
+		inline void Is_Riichi(bool arg){
 			Riichi=arg;
 		}
 
 		//天和
-		void Is_Tenhou(bool arg){
+		inline void Is_Tenhou(bool arg){
 			Tenhou=arg;
 		}
 
 		//地和
-		void Is_Tiihou(bool arg){
+		inline void Is_Tiihou(bool arg){
 			Tiihou=arg;
 		}
 
 		//ダブルリーチ 双立直
-		void Is_DoubleRiichi(bool arg){
+		inline void Is_DoubleRiichi(bool arg){
 			DoubleRiichi=arg;
 		}
 
 		//一発 一发
-		void Is_Ippatu(bool arg){
+		inline void Is_Ippatu(bool arg){
 			Ippatu=arg;
 		}
 
 		//チャンカン 抢杠
-		void Is_Tyankan(bool arg){
+		inline void Is_Tyankan(bool arg){
 			Tyankan=arg;
 		}
 
 		//リンシャン 岭上
-		void Is_Rinsyan(bool arg){
+		inline void Is_Rinsyan(bool arg){
 			Rinsyan=arg;
 		}
 
 		//流し満貫 流局满贯
-		void Is_NagashiMangan(bool arg){
+		inline void Is_NagashiMangan(bool arg){
 			NagashiMangan=arg;
 		}
 
 		//ハイテイ 海底
-		void Is_Haitei(bool arg){
+		inline void Is_Haitei(bool arg){
 			Haitei=arg;
 		}
 
