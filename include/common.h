@@ -6,12 +6,26 @@
 #include <optional>
 #include <map>
 #include <tuple>
+#include <set>
 typedef std::array<int, 37> hand_t;
 
 // seq_t: 0-36是刻子数量(杠子也算刻子),37-57是顺子数量,58-94是杠子数量
 // seq_t[RED_?5] > 0表示有红宝牌, seq_t[k]表示面子数量
-typedef std::array<int, 95> seq_t;
-
+//typedef std::array<int, 95> seq_t;
+struct fuuro_t{
+    std::set<std::tuple<int, int, int>> sequences = {};
+    std::set<int> anka_seq = {};
+    std::set<int> minka_seq = {};
+    int fuuro_num() const {
+        return sequences.size();
+    }
+    bool concealed_hand() const {
+        return sequences.size() == anka_seq.size();
+    }
+    int tile_num() const {
+        return 3*sequences.size() + anka_seq.size() + minka_seq.size();
+    }
+};
 enum tile_t{
     RED_M5 = 0, // whether has red M5
     M1, M2, M3, M4, M5, M6, M7, M8, M9,
@@ -125,5 +139,31 @@ const std::array<std::tuple<int, int, int>, 95> id_to_seq = {
         std::tuple<int, int, int>(36, 36, 36)
 };
 
-
+enum score_level_t{
+    LEVEL_0, // 0 fan
+    LEVEL_1, // 1-3 fan
+    LEVEL_2, // 4-5 fan
+    LEVEL_3, // 6-7 fan
+    LEVEL_4, // 8-10 fan
+    LEVEL_5, // 11-12 fan
+    LEVEL_6 // 13+ fan
+};
+inline score_level_t score_to_level(int fan){
+    switch (fan) {
+        case 0: return LEVEL_0;
+        case 1: case 2: case 3:
+            return LEVEL_1;
+        case 4: case 5:
+            return LEVEL_2;
+        case 6: case 7:
+            return LEVEL_3;
+        case 8: case 9: case 10:
+            return  LEVEL_4;
+        case 11: case 12:
+            return LEVEL_5;
+        default:
+            if(fan>=13) return LEVEL_6;
+            else return LEVEL_0;
+    }
+}
 #endif

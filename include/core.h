@@ -9,16 +9,13 @@ private:
     tile_t bakazi; // 场风
 
     // 副露数量 = 暗杠数量+明杠数量+吃数量+碰数量
-    seq_t fuuro = {}; // 副露
-    int fuuro_num; // 副露数量
-    int anka_num; // 暗杠数量
-    int minka_num; // 明杠数量
+    fuuro_t fuuro = {}; // 副露
 
 
-    int tiles_in_hands() const;
+//    int tiles_in_hands() const;
     inline bool judge_concealed_hand() const {
         // 检查是否处于门清状态
-        return fuuro_num == anka_num;
+        return fuuro.concealed_hand();
     }
     bool judge_kokusi13() const ; // 国士无双 13orphans
     bool judge_tuuiisou() const ; // 字一色
@@ -35,11 +32,17 @@ private:
     std::tuple<bool, bool> judge_tiitoitu() const ; // 七对子 & 两杯口
     hand_t get_raw_hand() const; // 比如手牌是1112345678999,副露是111 999,那么返回2345678
     int count_dora() const ; // 计算宝牌
+    static int dfs(hand_t raw_hand, int current_depth){
+        for(){
+            //检查胡没胡
+        }
+    }
 public:
     MJCore();
     std::optional<int> calc_point() const ;
     void set_jikazi(tile_t);
     void set_bakazi(tile_t);
+    std::array<std::array< hand_t , 7>, 4> search() const;
 };
 
 #endif
