@@ -6,26 +6,6 @@
 #include "common.h"
 using namespace std;
 
-bool add(array<int, 9>& h){
-    DEBUG
-    int idx = 0;
-    while(++(h[idx]) == 5){
-        DEBUG
-        h[idx] = 0;
-        idx++;
-        if(idx >= 9){
-            return false;
-        }
-    }
-    return true;
-}
-
-ostream& operator << (ostream& os, const hand_t& h){
-    for(int i=0; i< 9;i++){
-        os<< h[i];
-    }
-    return os;
-}
 int sum_of_hand(const hand_t& h){
     int sum=0;
     for(int i=0;i<9;i++){
@@ -131,20 +111,6 @@ optional<tuple<set<tuple<multiset<seq_t>, bool>>, bool>> dfs(hand_t& h){
     else{
         return  make_tuple(ans, false);
     }
-}
-ostream& operator<<(ostream& os, const set<tuple<multiset<seq_t>, bool>>& x){
-    os << '{';
-    for(auto item=x.cbegin(); item!=x.cend();item++){
-        os << "[";
-        auto [it, have_pair] = *item;
-        for(auto ptr=it.cbegin();ptr!=it.cend();ptr++){
-//            os << '(' << seq_to_string[(int)*ptr] << ')' << ", ";
-            os << (int)*ptr << ", ";
-        }
-        os << "], ";
-    }
-    os << '}';
-    return os;
 }
 
 int main(){

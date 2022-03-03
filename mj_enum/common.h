@@ -2,6 +2,7 @@
 #define __COMMON__
 #include <tuple>
 #include <fstream>
+#include <iostream>
 #include <array>
 #include <set>
 #include <string>
@@ -63,6 +64,59 @@ enum seq_t{
     _88,
     _99
 };
+bool add(hand_t& h){
+    DEBUG
+    int idx = 0;
+    while(++(h[idx]) == 5){
+        DEBUG
+        h[idx] = 0;
+        idx++;
+        if(idx >= 9){
+            return false;
+        }
+    }
+    return true;
+}
 
+uint32_t hand_encoder(const hand_t& h){
+    // 手牌编码器
+    uint32_t ans = 0;
+    for(int i=0; i<9;i++){
+        ans <<= 3;
+        ans |= (h[i] & 0b111);
+    }
+    return ans;
+}
+
+hand_t hand_decoder(uint32_t code){
+    hand_t result;
+    for(int i=8;i>=0; i--){
+        result[i] = code & 0b111;
+        code >>= 3;
+    }
+    return result;
+}
+
+std::ostream& operator<<(std::ostream& os, const std::set<std::tuple<std::multiset<seq_t>, bool>>& x){
+    os << '{';
+    for(auto item=x.cbegin(); item!=x.cend();item++){
+        os << "[";
+        auto [it, have_pair] = *item;
+        for(auto ptr=it.cbegin();ptr!=it.cend();ptr++){
+            //            os << '(' << seq_to_string[(int)*ptr] << ')' << ", ";
+            os << (int)*ptr << ", ";
+        }
+        os << "], ";
+    }
+    os << '}';
+    return os;
+}
+
+std::ostream& operator << (std::ostream& os, const hand_t& h){
+    for(int i=0; i< 9;i++){
+        os<< h[i];
+    }
+    return os;
+}
 
 #endif

@@ -3,19 +3,11 @@
 #include <set>
 #include <array>
 #include <map>
-#include <optional>
+#include <bitset>
 #include <vector>
 #include "common.h"
 using namespace std;
-uint32_t hand_encoder(const hand_t& h){
-    // 手牌编码器
-    uint32_t ans = 0;
-    for(int i=0; i<9;i++){
-        ans |= (h[i] & 0b11);
-        ans <<= 2;
-    }
-    return ans;
-}
+
 hand_t hand_parser(const string& line){
     int idx=0;
     while(line[idx] == ' ') idx++;
@@ -25,6 +17,7 @@ hand_t hand_parser(const string& line){
     }
     return h;
 }
+
 vector<string> split(const string &s, const string& seperator){
     vector<string> result;
     typedef string::size_type string_size;
@@ -63,7 +56,7 @@ tuple<multiset<seq_t>, bool> list_parser(const string& line){
     bool have_pair = false;
     vector<string> nums = split(line, ", []");
     for(const auto& num: nums){
-        seq_t seq = stoi(num);
+        seq_t seq = static_cast<seq_t>(stoi(num));
         if(seq >= _11 && seq <= _99)
             have_pair = true;
         result.insert(seq);
@@ -102,10 +95,24 @@ tuple<hand_t, set<tuple<multiset<seq_t>, bool>>> line_parser(const string& line)
     set<tuple<multiset<seq_t>, bool>> seq = set_parser(line.substr(idx, l));
     return make_tuple(hand, seq);
 }
+int test(){
+    hand_t h = {};
+    do{
+        if(h!= hand_decoder(hand_encoder(h))){
+            cout << "h = " << h << "\ttmp = " <<  bitset<32>( hand_encoder(h) ) << "\tout = " << hand_decoder(hand_encoder(h)) << endl;
+            cout << "encoder or decoder error!" << endl;
+            return 1;
+        }
+
+    } while (add(h));
+    return 0;
+}
+
 int main(){
+    ofstream out_f("mj-read.dat", ios::out);
     map<uint32_t, set<tuple<multiset<seq_t>, bool>> > mj_map;
     string file_name = "mj.dat";
-    istream f(file_name, ios::in);
+    ifstream f(file_name, ios::in);
     if(!f.good()){
         cout << "open file error!" << endl;
         return 1;
@@ -117,6 +124,10 @@ int main(){
         // TODO: test
         mj_map[index] = seq;
     }
+    for(auto it=mj_map.cbegin();it!=mj_map.cend();it++){
+        out_f << hand_decoder(it->first) << ' ' << it->second << endl;
+    }
     f.close();
+    out_f.close();
     return 0;
 }
