@@ -5,7 +5,9 @@ add_executable(mahjong
         ${PROJECT_SOURCE_DIR}/src/model.cpp
         ${PROJECT_SOURCE_DIR}/src/dataloader.cpp
         ${PROJECT_SOURCE_DIR}/src/core.cpp
+        ${PROJECT_SOURCE_DIR}/src/mjenum_loader.cpp
 )
+
 find_package(Torch REQUIRED)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 target_include_directories(mahjong

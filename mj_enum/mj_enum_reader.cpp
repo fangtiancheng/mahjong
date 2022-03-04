@@ -18,39 +18,6 @@ hand_t hand_parser(const string& line){
     return h;
 }
 
-vector<string> split(const string &s, const string& seperator){
-    vector<string> result;
-    typedef string::size_type string_size;
-    string_size i = 0;
-
-    while(i != s.size()){
-        bool flag = false;
-        while(i != s.size() && !flag){
-            flag = 1;
-            for(string_size x = 0; x < seperator.size(); ++x)
-                if(s[i] == seperator[x]){
-                    ++i;flag = false;
-                    break;
-                }
-        }
-        flag = false;
-        string_size j = i;
-        while(j != s.size() && !flag){
-            for(string_size x = 0; x < seperator.size(); ++x){
-                if(s[j] == seperator[x]){
-                    flag = true;
-                    break;
-                }
-            }
-            if(!flag)++j;
-        }
-        if(i != j){
-            result.push_back(move(s.substr(i, j-i)));
-            i = j;
-        }
-    }
-    return result;
-}
 tuple<multiset<seq_t>, bool> list_parser(const string& line){
     multiset<seq_t> result = {};
     bool have_pair = false;
