@@ -34,6 +34,9 @@ private:
     int judge_suuankouu(const std::multiset<seq_t>&) const ; // 四暗刻(单骑)
     int judge_suukantu() const ; // 四杠子
 
+    int judge_haku() const; // 役牌白
+    int judge_hatu() const; // 役牌发
+    int judge_tyun() const; // 役牌中
     int judge_pinfu(const std::multiset<seq_t>&) const ; // 平胡
     int judge_iipeikou(const std::multiset<seq_t>&) const; // 一杯口
     int judge_ittuu(const std::multiset<seq_t>&) const; // 一气通贯

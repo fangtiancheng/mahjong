@@ -127,6 +127,15 @@ int MJCore::judge_suukantu() const {
     return fuuro.minka_seq.size() + fuuro.anka_seq.size() == 4;
 }
 
+int MJCore::judge_haku() const {
+    return (hand[White] >= 3) ? 1:0;
+}
+int MJCore::judge_hatu() const {
+    return (hand[Green] >= 3) ? 1:0;
+}
+int MJCore::judge_tyun() const {
+    return (hand[Red] >= 3) ? 1:0;
+}
 int MJCore::judge_pinfu(const std::multiset<seq_t>& raw_hand_seq) const {
     // 平胡
     // 不检查是否胡牌，不检查手牌数量是否合法
@@ -299,6 +308,7 @@ int MJCore::judge_ryanpeikou(const std::multiset<seq_t> & raw_hand_seq) const {
         DEBUG;
     }
 #endif
+    // 由于前面七对子已经有2番了，因此这里两杯口只算1番
     return seq_pool[0] == seq_pool[1] && seq_pool[2] == seq_pool[3];
 }
 int MJCore::judge_sanankou(const std::multiset<seq_t> & raw_hand_seq) const {
@@ -366,7 +376,6 @@ std::array<std::array< hand_t , 7>, 4> MJCore::search() const{
 }
 
 std::optional<std::vector<std::multiset<seq_t>>> MJCore::parse_raw_hand() const{
-//    hand_t raw_hand = move(get_raw_hand());
     auto[a_idx, b_idx, c_idx, d_idx] = mjenum::hand_to_index(raw_hand);
     auto a_iter = MJCore::number_map.find(a_idx);
     if(a_iter == MJCore::number_map.cend()) return {};
