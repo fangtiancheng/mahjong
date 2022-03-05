@@ -19,11 +19,18 @@ int MJCore::judge_kokusi() const {
     // 检查是否胡牌(非常规胡法)，但是不检查手牌数量是否合法
     if(fuuro.fuuro_num()!=0) return false;
     bool gt1 = false;// great than 1
-    for(int i: orphans){
+    bool is13 = false;
+    for(tile_t i: orphans){
         if(hand[i] < 1) return false;
-        if(hand[i] > 1) gt1 = true;
+        if(hand[i] > 1){
+            gt1 = true;
+            if(rong_which==i)
+                is13 = true;
+        }
     }
-    return gt1;
+    if(gt1)
+        return is13 ? 2:1;
+    else return 0;
 }
 int MJCore::judge_tuuiisou() const {
     // 字一色 all honor tiles
@@ -47,6 +54,7 @@ int MJCore::judge_tyuuren() const {
     // 虽然 [S: 1112345678999 P: 2]也返回true
     // 但是这种方法一定过不了胡牌，所以没事
     if(fuuro.fuuro_num() != 0) return false;
+    bool gt1 = false, is9 = false;
     int base = 0;
     bool find_base = false;
     for(; base<30; base+=10){
@@ -58,12 +66,28 @@ int MJCore::judge_tyuuren() const {
     if(!find_base) return false;
     int j = base+1;
     if(hand[j]<3) return false;
+    if(hand[j]>3){
+        gt1 = true;
+        if(rong_which == j)
+            is9 = true;
+    }
     for(j++;j < base+9;j++){
         if(hand[j] < 1)
             return false;
+        if(hand[j] > 1){
+            gt1 = true;
+            if(rong_which == j)
+                is9 = true;
+        }
     }
     if(hand[j]<3) return false;
-    return true;
+    if(hand[j]>3){
+        gt1 = true;
+        if(rong_which == j)
+            is9 = true;
+    }
+    if(gt1) return is9? 2:1;
+    else return 0;
 }
 int MJCore::judge_ryuuiisou() const{
     // 绿一色 all green
