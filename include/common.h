@@ -30,7 +30,17 @@ enum seq_t{
     EE, SS, WW, NN, WhiteW, GreenG, RedR,
     EEEE, SSSS, WWWW, NNNN, WhiteWWW, GreenGGG, RedRRR
 };
-
+bool is_jyuntyanta(seq_t x){
+    // 检查是否纯带幺九
+    switch (x) {
+        case M111: case M999: case M123: case M789: case M11: case M1111: case M9999:
+        case P111: case P999: case P123: case P789: case P11: case P1111: case P9999:
+        case S111: case S999: case S123: case S789: case S11: case S1111: case S9999:
+            return true;
+        default:
+            return false;
+    }
+}
 bool is_straight(seq_t s){
     // 检查是否为顺子
     if(s>=EEE) return false;

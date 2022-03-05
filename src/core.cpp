@@ -1,9 +1,20 @@
 #include "core.h"
 bool MJCore::judge_yaku_pair(seq_t x) const {
-
+    // 是否为役牌
+    if(is_straight(x)) return false;
+    tile_t t = seq_to_tile(x)[0];
+    switch (t) {
+        case White: case Green: case Red:
+            return true;
+        default:
+            if(t == jikazi || t == bakazi)
+                return true;
+            else
+                return false;
+    }
 }
 
-bool MJCore::judge_kokusi13() const {
+int MJCore::judge_kokusi() const {
     // 国士无双 13orphans
     // 检查是否胡牌(非常规胡法)，但是不检查手牌数量是否合法
     if(fuuro.fuuro_num()!=0) return false;
@@ -14,8 +25,7 @@ bool MJCore::judge_kokusi13() const {
     }
     return gt1;
 }
-
-bool MJCore::judge_tuuiisou() const {
+int MJCore::judge_tuuiisou() const {
     // 字一色 all honor tiles
     // 不检查是否胡牌，不检查手牌数量是否合法
     for(int i=0; i<East; i++){
@@ -24,15 +34,14 @@ bool MJCore::judge_tuuiisou() const {
     }
     return true;
 }
-
-bool MJCore::judge_daisangen() const {
+int MJCore::judge_daisangen() const {
     // 大三元
     // 不检查是否胡牌，不检查手牌数量是否合法
     return (hand[tile_t::White]>=3) &&
     (hand[tile_t::Green]>=3) &&
     (hand[tile_t::Red]>=3);
 }
-bool MJCore::judge_tyuuren9() const {
+int MJCore::judge_tyuuren() const {
     // 九莲宝灯
     // 不检查是否胡牌，不检查手牌数量是否合法
     // 虽然 [S: 1112345678999 P: 2]也返回true
@@ -56,7 +65,7 @@ bool MJCore::judge_tyuuren9() const {
     if(hand[j]<3) return false;
     return true;
 }
-bool MJCore::judge_ryuuiisou() const{
+int MJCore::judge_ryuuiisou() const{
     // 绿一色 all green
     for(int i=0; i<=Red; i++){
         if(hand[i]>0 && // 不是0而且不绿
@@ -66,8 +75,7 @@ bool MJCore::judge_ryuuiisou() const{
     }
     return true;
 }
-
-bool MJCore::judge_tinroutou() const {
+int MJCore::judge_tinroutou() const {
     // 清老头
     // 不检查是否胡牌，不检查手牌数量是否合法
     for(int i=0; i<=Red; i++){
@@ -78,15 +86,13 @@ bool MJCore::judge_tinroutou() const {
     }
     return true;
 }
-
-bool MJCore::judge_daisuusii() const {
+int MJCore::judge_daisuusii() const {
     // 大四喜
     // 不检查是否胡牌，不检查手牌数量是否合法
-    return hand[East]>=3 && hand[South]>=3 &&
-    hand[West] >= 3 && hand[North] >= 3;
+    return (hand[East]>=3 && hand[South]>=3 &&
+    hand[West] >= 3 && hand[North] >= 3) ? 2:0;
 }
-
-bool MJCore::judge_syousuusii() const {
+int MJCore::judge_syousuusii() const {
     // 小四喜
     // 不检查是否胡牌，不检查手牌数量是否合法
     // 如果是大四喜，return false
@@ -97,43 +103,219 @@ bool MJCore::judge_syousuusii() const {
     return (hand[East] == 2) + (hand[South] == 2)
     + (hand[West] == 2) + (hand[North] == 2) == 1;
 }
-
-bool MJCore::judge_suuankouu(const std::multiset<seq_t>& raw_hand_seq) const {
+int MJCore::judge_suuankouu(const std::multiset<seq_t>& raw_hand_seq) const {
     // 四暗刻
     // 不检查是否胡牌，不检查手牌数量是否合法
     // 不检查荣和，但是检查门清
-    if(!fuuro.concealed_hand()) return false;
+    if(!fuuro.concealed_hand()) return 0;
+    bool tanki = false; // 单骑
     for(seq_t x: raw_hand_seq){
-        if(is_straight(x)) return false;
+        if(is_straight(x)) return 0;
+        if(is_pair(x)){
+            tanki = seq_to_tile(x)[0] == rong_which;
+        }
     }
     for(seq_t x: fuuro.sequences){
-        if(is_straight(x)) return false;
+        if(is_straight(x)) return 0;
     }
-    return true;
+    if(tanki) return 2;
+    else return tumo ? 1:0;
 }
-
-bool MJCore::judge_suukantu() const {
+int MJCore::judge_suukantu() const {
     // 四杠子
     // 不检查是否胡牌，不检查手牌数量是否合法
     return fuuro.minka_seq.size() + fuuro.anka_seq.size() == 4;
 }
 
-bool MJCore::judge_pinfu(const std::multiset<seq_t>& raw_hand_seq) const {
+int MJCore::judge_pinfu(const std::multiset<seq_t>& raw_hand_seq) const {
     // 平胡
     // 不检查是否胡牌，不检查手牌数量是否合法
     // 不检查荣和，检查役牌
-    if(!fuuro.concealed_hand()) return false; // 门清限定
+    if(!fuuro.concealed_hand()) return 0; // 门清限定
     for(seq_t x:raw_hand_seq){
-        if(is_triplet(x)) return false;
+        if(is_triplet(x)) return 0; // 刻子
+        else if(is_pair(x)){ // 对子
+            if(judge_yaku_pair(x))
+                return 0;
+            if(seq_to_tile(x)[0] == rong_which)
+                return 0; // 单骑
+        }
+        else{
+            // 顺子
+            auto seq = seq_to_tile(x);
+            if(seq[1] == rong_which)
+                return 0; // 坎张
+        }
     }
-    return true;
+    return 1;
 }
-
-bool MJCore::judge_tiitoitu() const {
+int MJCore::judge_iipeikou(const std::multiset<seq_t> & raw_hand_seq) const {
+    if(!fuuro.concealed_hand()) return 0;// 门清限定
+    std::vector<seq_t> seq_pool = {};
+    bool exist_same = false;
+    for(seq_t x: raw_hand_seq){
+        // 顺子
+        if(std::find(seq_pool.cbegin(), seq_pool.cend(), x)!=seq_pool.cend())
+            exist_same = true;
+        else
+            seq_pool.push_back(x);
+    }
+    if(!exist_same) return 0;
+    return judge_ryanpeikou(raw_hand_seq) ? 0 : 1;
+}
+int MJCore::judge_ittuu(const std::multiset<seq_t> & raw_hand_seq) const {
+    // 一气通贯 123 456 789
+    bool ittuu = false;
+    std::vector<seq_t> seq_pool = {};
+    for(seq_t x: raw_hand_seq){
+        if(is_straight(x)){
+            seq_pool.push_back(x);
+        }
+    }
+    for(seq_t x: fuuro.sequences){
+        if(is_straight(x)){
+            seq_pool.push_back(x);
+        }
+    }
+    std::sort(seq_pool.begin(), seq_pool.end());
+    if(seq_pool.size()==3){
+        ittuu = (seq_pool[1]-seq_pool[0]==M456-M123) &&
+                (seq_pool[2]-seq_pool[1]==M456-M123);
+    } else if(seq_pool.size()==4){
+        ittuu = (seq_pool[1]-seq_pool[0]==M456-M123) &&
+                (seq_pool[2]-seq_pool[1]==M456-M123);
+        ittuu = ittuu || ((seq_pool[2]-seq_pool[1]==M456-M123) &&
+                (seq_pool[3]-seq_pool[2]==M456-M123));
+    }
+    if(ittuu) return fuuro.concealed_hand() ? 2:1;
+    else return 0;
+}
+int MJCore::judge_sansyokudonjyun(const std::multiset<seq_t> & raw_hand_seq) const {
+    // 三色同顺
+    bool sansyokudonjyun = false;
+    std::vector<seq_t> seq_pool = {};
+    for(seq_t x: raw_hand_seq){
+        if(is_straight(x)){
+            seq_pool.push_back(x);
+        }
+    }
+    for(seq_t x: fuuro.sequences){
+        if(is_straight(x)){
+            seq_pool.push_back(x);
+        }
+    }
+    std::sort(seq_pool.begin(), seq_pool.end());
+    if(seq_pool.size()==3){
+        sansyokudonjyun = (seq_pool[1]-seq_pool[0]==P123-M123) &&
+                (seq_pool[2]-seq_pool[1]==P123-M123);
+    } else if(seq_pool.size()==4){
+        sansyokudonjyun = (seq_pool[1]-seq_pool[0]==P123-M123) &&
+                (seq_pool[2]-seq_pool[1]==P123-M123);
+        sansyokudonjyun = sansyokudonjyun || ((seq_pool[2]-seq_pool[1]==P123-M123) &&
+                (seq_pool[3]-seq_pool[2]==P123-M123));
+    }
+    if(sansyokudonjyun) return fuuro.concealed_hand() ? 2:1;
+    else return 0;
+}
+int MJCore::judge_tyanta(const std::multiset<seq_t> & raw_hand_seq) const {
+    // 全带幺
+    bool have_wind = false;
+    for(seq_t x: raw_hand_seq){
+        if(is_jyuntyanta(x)) continue;
+        else if(x>=EEE && x<=RedRRR) have_wind = true;
+        else return 0;
+    }
+    for(seq_t x: fuuro.sequences){
+        if(is_jyuntyanta(x)) continue;
+        else if(x>=EEE && x<=RedRRR) have_wind = true;
+        else return 0;
+    }
+    if(have_wind){
+        // 混全
+        return fuuro.concealed_hand() ? 2:1;
+    }
+    else{
+        // 纯全
+        return fuuro.concealed_hand() ? 3:2;
+    }
+}
+int MJCore::judge_toitoi(const std::multiset<seq_t> & raw_hand_seq) const {
+    for(seq_t x: raw_hand_seq){
+        if(is_straight(x)) return 0;
+    }
+    for(seq_t x: fuuro.sequences){
+        if(is_straight(x)) return 0;
+    }
+    return 2;
+}
+int MJCore::judge_sansyokudoukou(const std::multiset<seq_t> & raw_hand_seq) const {
+    // 三色同刻
+    bool sansyokudoukou = false;
+    std::vector<seq_t> seq_pool = {};
+    for(seq_t x: raw_hand_seq){
+        if(x<EEE && is_triplet(x)){
+            if(x%(P111-M111) >= M1111){
+                x = static_cast<seq_t>(x - static_cast<seq_t>(M1111-M111));
+            }// convert 杠子
+            seq_pool.push_back(x);
+        }
+    }
+    for(seq_t x: fuuro.sequences){
+        if(x<EEE && is_triplet(x)){
+            if(x%(P111-M111) >= M1111){
+                x = static_cast<seq_t>(x - static_cast<seq_t>(M1111-M111));
+            }// convert 杠子
+            seq_pool.push_back(x);
+        }
+    }
+    std::sort(seq_pool.begin(), seq_pool.end());
+    if(seq_pool.size()==3){
+        sansyokudoukou = (seq_pool[1]-seq_pool[0]==P111-M111) &&
+                (seq_pool[2]-seq_pool[1]==P111-M111);
+    } else if(seq_pool.size()==4){
+        sansyokudoukou = (seq_pool[1]-seq_pool[0]==P111-M111) &&
+                (seq_pool[2]-seq_pool[1]==P111-M111);
+        sansyokudoukou = sansyokudoukou || ((seq_pool[2]-seq_pool[1]==P111-M111) &&
+                (seq_pool[3]-seq_pool[2]==P111-M111));
+    }
+    if(sansyokudoukou) return fuuro.concealed_hand() ? 2:1;
+    else return 0;
+}
+int MJCore::judge_ryanpeikou(const std::multiset<seq_t> & raw_hand_seq) const {
+    // 两杯口
+    if(!fuuro.concealed_hand()) return 0;
+    std::vector<seq_t> seq_pool = {};
+    for(seq_t x: raw_hand_seq){
+        if(is_straight(x)){
+            seq_pool.push_back(x);
+        }
+        else if(is_triplet(x)){
+            return 0;
+        }
+    }
+    std::sort(seq_pool.begin(), seq_pool.end());
+#ifdef DEBUG
+    if(seq_pool.size()!=4){
+        DEBUG;
+    }
+#endif
+    return seq_pool[0] == seq_pool[1] && seq_pool[2] == seq_pool[3];
+}
+int MJCore::judge_sanankou(const std::multiset<seq_t> & raw_hand_seq) const {
+    int ankou = 0;
+    for(seq_t x: raw_hand_seq){
+        if(is_triplet(x)) ankou++;
+    }
+    ankou += fuuro.anka_seq.size();
+    return ankou == 3? 2: 0;
+}
+int MJCore::judge_tiitoitu() const {
     // 七对子
     // 由于是特殊胡牌方式，因此检查是否胡牌
+    // 注意，龙七对是不算七对子的
+    // 如果是两杯口，那么也返回true（即使两杯口不算七对子）
     if(fuuro.fuuro_num() > 0)
-        return false;
+        return 0;
     int pair_num = 0;
     for(int i=1; i<37; i++){
         if(i%10==0) i++;
@@ -145,18 +327,12 @@ bool MJCore::judge_tiitoitu() const {
                 pair_num++;
                 break;
             default:
-                return false;
+                return 0;
         }
     }
-    return pair_num == 7;
+    return pair_num == 7 ? 2 : 0;
 }
 
-//hand_t MJCore::get_raw_hand() const {
-//    if(fuuro.fuuro_num() == 0) return hand;
-//    // handle red dora
-//    // TODO:
-//
-//}
 
 int MJCore::count_dora() const {
     int doras = 0;
@@ -173,37 +349,9 @@ std::map<uint32_t, std::set<std::tuple<std::multiset<mjenum::pure_num_t>, bool>>
 std::map<uint32_t, std::set<std::tuple<std::multiset<mjenum::pure_wind_t>, bool>>> MJCore::character_map = mjenum::load_wind_map();
 
 MJCore::MJCore() {}
-std::optional<int> MJCore::calc_point() const{
-    // 是否胡牌，如果胡牌则计算番数
+int MJCore::calc_point() const{
+    // 是否胡牌，如果胡牌则计算番数,否则 return 0
 
-    // 去掉副露
-    int seq_to_find = 4 - fuuro.fuuro_num();
-//    hand_t raw_hand = get_raw_hand();
-    // 非常规型，寻找国士无双和七对子
-    if(judge_kokusi13())
-        return 13;
-    bool is_tiitiotu, is_ryanpeikou;
-    std::tie(is_tiitiotu, is_ryanpeikou) = judge_tiitoitu();
-    if(is_tiitiotu){
-        if(judge_tuuiisou()) return 13; // 大七星
-        // TODO:
-    }
-    // 找孤立张
-    bool paired = false; // 是否有雀头
-    for(int i=tile_t::East; i<=tile_t::Red; i++){
-        if(raw_hand[i] > 0){
-            // TODO:
-        }
-    }
-    // 先找役满
-    {
-        if(judge_tyuuren9()) return 13;
-        int x = judge_daisangen() + judge_ryuuiisou() + judge_tinroutou() +
-                judge_daisuusii() + judge_syousuusii() + judge_suuankouu() +
-                judge_suukantu();
-        if(x!=0) return 13*x;
-    }
-    // 再找常规役
 }
 
 void MJCore::set_jikazi(tile_t j){
