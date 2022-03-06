@@ -6,6 +6,7 @@ add_executable(mahjong
         ${PROJECT_SOURCE_DIR}/src/dataloader.cpp
         ${PROJECT_SOURCE_DIR}/src/core.cpp
         ${PROJECT_SOURCE_DIR}/src/mjenum_loader.cpp
+        ${PROJECT_SOURCE_DIR}/src/common.cpp
 )
 
 find_package(Torch REQUIRED)

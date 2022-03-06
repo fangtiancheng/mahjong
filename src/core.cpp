@@ -165,6 +165,7 @@ int MJCore::judge_pinfu(const std::multiset<seq_t>& raw_hand_seq) const {
     // 不检查是否胡牌，不检查手牌数量是否合法
     // 不检查荣和，检查役牌
     if(!fuuro.concealed_hand()) return 0; // 门清限定
+    int mid_tile = 0; // 坎张
     for(seq_t x:raw_hand_seq){
         if(is_triplet(x)) return 0; // 刻子
         else if(is_pair(x)){ // 对子
@@ -177,10 +178,13 @@ int MJCore::judge_pinfu(const std::multiset<seq_t>& raw_hand_seq) const {
             // 顺子
             auto seq = seq_to_tile(x);
             if(seq[1] == rong_which)
-                return 0; // 坎张
+                mid_tile++; // 坎张
         }
     }
-    return 1;
+    if(mid_tile < raw_hand[rong_which])
+        return 1;
+    else
+        return 0;
 }
 int MJCore::judge_iipeikou(const std::multiset<seq_t> & raw_hand_seq) const {
     if(!fuuro.concealed_hand()) return 0;// 门清限定
@@ -383,9 +387,24 @@ std::map<uint32_t, std::set<std::tuple<std::multiset<mjenum::pure_num_t>, bool>>
 std::map<uint32_t, std::set<std::tuple<std::multiset<mjenum::pure_wind_t>, bool>>> MJCore::character_map = mjenum::load_wind_map();
 
 MJCore::MJCore() {}
-int MJCore::calc_point() const{
+void MJCore::set_hand(const hand_t &h) {
+    hand = h;
+    raw_hand = h;
+}
+void MJCore::clear() noexcept {
+    hand.fill(0);
+    raw_hand.fill(0);
+    dora.fill(0);
+    jikazi = East;
+    bakazi = East;
+    riichi_state = false;
+    fuuro.clear();
+    tumo = false;
+    rong_which = static_cast<tile_t>(0);
+}
+int MJCore::calc_point(const std::multiset<seq_t>& raw_hand_seq) const {
     // 是否胡牌，如果胡牌则计算番数,否则 return 0
-
+    return 1;
 }
 
 void MJCore::set_jikazi(tile_t j){
@@ -396,10 +415,104 @@ void MJCore::set_bakazi(tile_t b){
 }
 
 std::array<std::array< hand_t , 7>, 4> MJCore::search() const{
+    // use bfs
+    std::queue<hand_t> current_queue;
+    std::queue<hand_t> next_queue;
+    current_queue.push(raw_hand);
+//    std::set<hand_t> hand_pool;
+    const int max_depth=4;
+    for(int depth=0;depth<max_depth;depth++){
+        int max_score = -1;
+        while (!current_queue.empty()){
+            hand_t h = std::move(current_queue.front());
+            current_queue.pop();
+            auto op_raw_hand_seq = parse_raw_hand(h);
+            if(op_raw_hand_seq.has_value()) {
+                auto raw_hand_seqs = op_raw_hand_seq.value();
+                for(const auto& raw_hand_seq: raw_hand_seqs){
+                    max_score = std::max(max_score, calc_point(raw_hand_seq));
+                }
+            }
+            for(int i=1; i<=Red;i++){
+                if(i%10==0) continue;
+                if(h[i]<1) continue;
 
+                h[i]--;
+                for(int base=0;base<25; base += 10){
+                    int sum_near = h[base+1]+h[base+2]+h[base+3];
+                    for(int j=base+1; j<=base+9;j++){
+                        if(i!=j){
+                            if(depth == 0 || (depth>0 && sum_near>0)){
+                                h[j]++;
+                                next_queue.push(h);
+                                h[j]--;
+                            }
+                        }
+                        if(j%10>=3) sum_near -= h[j-2];
+                        if(j%10<=6) sum_near += h[j+3];
+                    }
+                }
+                for(int j=East; j<= Red;j++){
+                    if(i!=j){
+                        if(depth<=1 ||(depth>1 && h[j]>0)){
+                            h[j]++;
+                            next_queue.push(h);
+                            h[j]--;
+                        }
+                    }
+                }
+                h[i]++;
+            }
+        }
+        std::cout << "next_queue.size = " << next_queue.size() << std::endl;
+        std::swap(current_queue, next_queue);
+        std::cout << "depth = " << depth << ", max-score = " << max_score << std::endl;
+    }
+    // TODO:
+    return {};
 }
 
-std::optional<std::vector<std::multiset<seq_t>>> MJCore::parse_raw_hand() const{
+bool MJCore::can_chi(tile_t t) const {
+    if(t>=East) return false;
+    int x = t%(P1-M1);
+    if(x == RED_M5){
+        x += (M5-RED_M5);
+        t = static_cast<tile_t>(static_cast<int>(t) + static_cast<int>(M5-RED_M5));
+    }
+    if(x<M8 && raw_hand[t+1]>0&& raw_hand[t+2]>0) return true;
+    if(x>M2 && raw_hand[t-1]>0&& raw_hand[t-2]>0) return true;
+    if(x>M1 && x<M9 && raw_hand[t-1]>0&& raw_hand[t+1]>0) return true;
+    return false;
+}
+bool MJCore::can_pong(tile_t t) const {
+    if(t==RED_M5 || t==RED_P5 || t==RED_S5){
+        t = static_cast<tile_t>(static_cast<int>(t) + static_cast<int>(M5-RED_M5));
+    }
+    return raw_hand[t] >= 2;
+}
+bool MJCore::can_min_kang(tile_t t) const {
+    if(t==RED_M5 || t==RED_P5 || t==RED_S5){
+        t = static_cast<tile_t>(static_cast<int>(t) + static_cast<int>(M5-RED_M5));
+    }
+    return raw_hand[t] >= 3;
+}
+bool MJCore::can_an_kang(tile_t t) const {
+    if(t==RED_M5 || t==RED_P5 || t==RED_S5){
+        t = static_cast<tile_t>(static_cast<int>(t) + static_cast<int>(M5-RED_M5));
+    }
+    return raw_hand[t] >= 3;
+}
+bool MJCore::can_add_kang(tile_t t) const {
+    if(t==RED_M5 || t==RED_P5 || t==RED_S5){
+        t = static_cast<tile_t>(static_cast<int>(t) + static_cast<int>(M5-RED_M5));
+    }
+    seq_t x = tile_to_triplet(t);
+    if(fuuro.sequences.find(x) != fuuro.sequences.cend())
+        return true;
+    else
+        return false;
+}
+std::optional<std::vector<std::multiset<seq_t>>> parse_raw_hand(const hand_t& raw_hand) {
     auto[a_idx, b_idx, c_idx, d_idx] = mjenum::hand_to_index(raw_hand);
     auto a_iter = MJCore::number_map.find(a_idx);
     if(a_iter == MJCore::number_map.cend()) return {};

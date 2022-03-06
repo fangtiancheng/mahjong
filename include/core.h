@@ -4,18 +4,21 @@
 #include "mjenum_loader.h"
 #include <algorithm>
 #include <map>
+#include <queue>
+std::optional<std::vector<std::multiset<seq_t>>> parse_raw_hand(const hand_t&);
 class MJCore{
+public:
     // [1 1 1 2 3 4 5 5 6 7 8 9 9 9] => uint32_t => (1 1 1) (2 3 4) (6 7 8) (9 9 9) (5 5)
     static std::map<uint32_t, std::set<std::tuple<std::multiset<mjenum::pure_num_t>, bool>>> number_map;
 
     // [e e e s s s w w w n n n W W] => uint32_t => (e e e) (s s s) (w w w) (n n n) (W W)
     static std::map<uint32_t, std::set<std::tuple<std::multiset<mjenum::pure_wind_t>, bool>>> character_map;
-private:
+protected:
     hand_t hand = {}; // 手牌，包括副露，含red dora
     hand_t raw_hand = {}; // 手牌，不包括副露，含red dora
     hand_t dora = {}; // 宝牌，非宝牌指示牌，不含red dora
-    tile_t jikazi; // 自风
-    tile_t bakazi; // 场风
+    tile_t jikazi = East; // 自风
+    tile_t bakazi = East; // 场风
     bool riichi_state = false; // 是否已经进入立直状态
     // 副露数量 = 暗杠数量+明杠数量+吃数量+碰数量
     fuuro_t fuuro = {}; // 副露
@@ -49,10 +52,11 @@ private:
     int judge_tiitoitu() const ; // 七对子
     int count_dora() const ; // 计算宝牌
 
-    std::optional<std::vector<std::multiset<seq_t>>> parse_raw_hand() const;
 public:
     MJCore();
-    int calc_point() const ;
+    void set_hand(const hand_t&);
+    void clear() noexcept ;
+    int calc_point(const std::multiset<seq_t>& ) const ;
     void set_jikazi(tile_t);
     void set_bakazi(tile_t);
     std::array<std::array< hand_t , 7>, 4> search() const;
@@ -63,21 +67,19 @@ public:
     bool can_min_kang(tile_t t) const;
     bool can_an_kang(tile_t t) const;
     bool can_add_kang(tile_t t) const;
-    bool can_riichi(tile_t t) const;
-    bool can_rong(tile_t t) const;
+//    bool can_riichi(tile_t t) const;
 
     // action
-    bool chi(tile_t t);
-    bool pong(tile_t t);
-    bool min_kang(tile_t t);
-    bool an_kang(tile_t t);
-    bool add_kang(tile_t t);
-    bool discard(tile_t t);
-    bool riichi(tile_t t);
+//    bool chi(tile_t t);
+//    bool pong(tile_t t);
+//    bool min_kang(tile_t t);
+//    bool an_kang(tile_t t);
+//    bool add_kang(tile_t t);
+//    bool discard(tile_t t);
+//    bool riichi(tile_t t);
 
-    bool tumo;  // 是否为自摸
-    tile_t rong_which; // 最后胡的哪张
-
+    bool tumo = false;  // 是否为自摸
+    tile_t rong_which = static_cast<tile_t>(0); // 最后胡的哪张
 };
 
 #endif
