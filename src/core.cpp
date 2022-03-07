@@ -414,63 +414,97 @@ void MJCore::set_bakazi(tile_t b){
     bakazi = b;
 }
 
-std::array<std::array< hand_t , 7>, 4> MJCore::search() const{
-    // use bfs
-    std::queue<hand_t> current_queue;
-    std::queue<hand_t> next_queue;
-    current_queue.push(raw_hand);
-//    std::set<hand_t> hand_pool;
-    const int max_depth=4;
-    for(int depth=0;depth<max_depth;depth++){
-        int max_score = -1;
-        while (!current_queue.empty()){
-            hand_t h = std::move(current_queue.front());
-            current_queue.pop();
-            auto op_raw_hand_seq = parse_raw_hand(h);
-            if(op_raw_hand_seq.has_value()) {
-                auto raw_hand_seqs = op_raw_hand_seq.value();
-                for(const auto& raw_hand_seq: raw_hand_seqs){
-                    max_score = std::max(max_score, calc_point(raw_hand_seq));
-                }
-            }
-            for(int i=1; i<=Red;i++){
-                if(i%10==0) continue;
-                if(h[i]<1) continue;
-
-                h[i]--;
-                for(int base=0;base<25; base += 10){
-                    int sum_near = h[base+1]+h[base+2]+h[base+3];
-                    for(int j=base+1; j<=base+9;j++){
-                        if(i!=j){
-                            if(depth == 0 || (depth>0 && sum_near>0)){
-                                h[j]++;
-                                next_queue.push(h);
-                                h[j]--;
-                            }
-                        }
-                        if(j%10>=3) sum_near -= h[j-2];
-                        if(j%10<=6) sum_near += h[j+3];
-                    }
-                }
-                for(int j=East; j<= Red;j++){
-                    if(i!=j){
-                        if(depth<=1 ||(depth>1 && h[j]>0)){
-                            h[j]++;
-                            next_queue.push(h);
-                            h[j]--;
-                        }
-                    }
-                }
-                h[i]++;
-            }
+void MJCore::dfs(tile_t last_tile, int depth) {
+    if(depth >= MAX_DEPTH) return;
+    int syanten_num = syanten::get_syanten(raw_hand, fuuro.fuuro_num());
+    std::cout << syanten_num << std::endl;
+    if(syanten_num == -1){
+        auto seqs_op = parse_raw_hand(raw_hand);
+        if(!seqs_op.has_value()){
+            std::cerr << "conflict occurs between syanten model and MJCore" << std::endl;
+            std::cerr << "hand = \n" << raw_hand << std::endl;
+            exit(1);
         }
-        std::cout << "next_queue.size = " << next_queue.size() << std::endl;
-        std::swap(current_queue, next_queue);
-        std::cout << "depth = " << depth << ", max-score = " << max_score << std::endl;
+        auto seqs = seqs_op.value();
+        int max_score = -10;
+        for(const auto& raw_hand_seq: seqs){
+            max_score = std::max(max_score, calc_point(raw_hand_seq));
+        }
+        std::cout << "depth = " << depth << ", score = " << max_score << std::endl;
+    } else{// 胡了的牌就不参与了
+        if(syanten_num+1 +depth < MAX_DEPTH)
+        for(int i=M1; i<=Red;i++){
+            if(i%10==0||raw_hand[i]==0||i==last_tile) continue;
+            raw_hand[i]--; hand[i]--;
+            for(int j=M1; j<=Red;j++){
+                if(j%10==0||j==i||hand[j]==4) continue;
+                raw_hand[j]++; hand[j]++;
+                dfs(static_cast<tile_t>(j), depth+1);
+                raw_hand[j]--; hand[j]--;
+            }
+            raw_hand[i]++; hand[i]++;
+        }
     }
-    // TODO:
-    return {};
 }
+
+
+//std::array<std::array< hand_t , 7>, 4> MJCore::search() const{
+//    // use bfs
+//    std::queue<hand_t> current_queue;
+//    std::queue<hand_t> next_queue;
+//    current_queue.push(raw_hand);
+//    // std::set<hand_t> hand_pool;
+//    const int max_depth=4;
+//    for(int depth=0;depth<max_depth;depth++){
+//        int max_score = -1;
+//        while (!current_queue.empty()){
+//            hand_t h = std::move(current_queue.front());
+//            current_queue.pop();
+//            auto op_raw_hand_seq = parse_raw_hand(h);
+//            if(op_raw_hand_seq.has_value()) {
+//                auto raw_hand_seqs = op_raw_hand_seq.value();
+//                for(const auto& raw_hand_seq: raw_hand_seqs){
+//                    max_score = std::max(max_score, calc_point(raw_hand_seq));
+//                }
+//            }
+//            for(int i=1; i<=Red;i++){
+//                if(i%10==0) continue;
+//                if(h[i]<1) continue;
+//
+//                h[i]--;
+//                for(int base=0;base<25; base += 10){
+//                    int sum_near = h[base+1]+h[base+2]+h[base+3];
+//                    for(int j=base+1; j<=base+9;j++){
+//                        if(i!=j){
+//                            if(depth == 0 || (depth>0 && sum_near>0)){
+//                                h[j]++;
+//                                next_queue.push(h);
+//                                h[j]--;
+//                            }
+//                        }
+//                        if(j%10>=3) sum_near -= h[j-2];
+//                        if(j%10<=6) sum_near += h[j+3];
+//                    }
+//                }
+//                for(int j=East; j<= Red;j++){
+//                    if(i!=j){
+//                        if(depth<=1 ||(depth>1 && h[j]>0)){
+//                            h[j]++;
+//                            next_queue.push(h);
+//                            h[j]--;
+//                        }
+//                    }
+//                }
+//                h[i]++;
+//            }
+//        }
+//        std::cout << "next_queue.size = " << next_queue.size() << std::endl;
+//        std::swap(current_queue, next_queue);
+//        std::cout << "depth = " << depth << ", max-score = " << max_score << std::endl;
+//    }
+//    // TODO:
+//    return {};
+//}
 
 bool MJCore::can_chi(tile_t t) const {
     if(t>=East) return false;

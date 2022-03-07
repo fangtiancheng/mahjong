@@ -7,37 +7,11 @@
 #include <set>
 #include <tuple>
 #include <array>
+#include <algorithm>
 #include "common.h"
 
 namespace mjenum{
     EXPORT using pure_hand_t = std::array<int, 9>;
-//    const std::array<std::string, 25> pure_seq_to_string = {
-//            "1, 1, 1",
-//            "2, 2, 2",
-//            "3, 3, 3",
-//            "4, 4, 4",
-//            "5, 5, 5",
-//            "6, 6, 6",
-//            "7, 7, 7",
-//            "8 ,8, 8",
-//            "9, 9, 9",
-//            "1, 2, 3",
-//            "2, 3, 4",
-//            "3, 4, 5",
-//            "4, 5, 6",
-//            "5, 6, 7",
-//            "6, 7, 8",
-//            "7, 8, 9",
-//            "1, 1",
-//            "2, 2",
-//            "3, 3",
-//            "4, 4",
-//            "5, 5",
-//            "6, 6",
-//            "7, 7",
-//            "8, 8",
-//            "9, 9"
-//    };
     enum pure_num_t{
         _111, _222, _333, _444, _555, _666, _777, _888, _999,
         _123, _234, _345, _456, _567, _678, _789,
@@ -58,7 +32,9 @@ namespace mjenum{
     bool judge_sum_legal(int sum);
     std::optional<std::tuple<std::set<std::tuple<std::multiset<pure_num_t>, bool>>, bool>> dfs_num(pure_hand_t& h);
     std::optional<std::tuple<std::set<std::tuple<std::multiset<pure_wind_t>, bool>>, bool>> dfs_wind(pure_hand_t& h);
-
+    std::vector<std::tuple<int,int>> dfs_syanten(pure_hand_t& h);
+    bool compare_syanten(const std::tuple<int,int>&, const std::tuple<int, int> &);
+    bool compare_syanten_value_equal(const std::tuple<int,int>&, const std::tuple<int, int> &);
     template <typename pure_type>
     pure_hand_t hand_parser(const std::string& line);
 
@@ -72,6 +48,10 @@ namespace mjenum{
     std::tuple<std::multiset<pure_type>, bool> list_parser(const std::string& line);
 
     // generate "mj.dat" in current directory
+    bool gen_num_dat_file();
+    bool gen_wind_dat_file();
+    // TODO: fix the bug in generate syanten data
+//    bool gen_syanten_dat_file(); // many bugs
     bool gen_dat_file();
 
     // load "mj.dat" to memory

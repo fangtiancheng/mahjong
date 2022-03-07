@@ -3,14 +3,18 @@
 #define __COMMON__
 #include <array>
 #include <vector>
+#include <iostream>
 #include <set>
 #include <optional>
 #include <map>
 #include <tuple>
 #include <set>
+#include <fstream>
 #define EXPORT
+#define IN
+#define OUT
 typedef std::array<int, 37> hand_t;
-
+std::ostream & operator<<(std::ostream& , const hand_t&);
 enum seq_t{
     M111, M222, M333, M444, M555, M666, M777, M888, M999,
     M123,M234, M345, M456, M567, M678, M789,
@@ -47,7 +51,7 @@ struct fuuro_t{
     std::set<seq_t> anka_seq = {};
     std::set<seq_t> minka_seq = {};
     void clear() noexcept ;
-    int fuuro_num() const {
+    inline int fuuro_num() const {
         return sequences.size();
     }
     bool concealed_hand() const;
@@ -111,4 +115,5 @@ enum score_level_t{
     LEVEL_6 // 13+ fan
 };
 score_level_t score_to_level(int fan);
+bool test_file_exist(const std::string& );
 #endif

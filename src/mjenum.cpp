@@ -1,4 +1,4 @@
-#include "mjenum_loader.h"
+#include "mjenum.h"
 namespace mjenum{
     template <typename pure_type>
     bool add(pure_hand_t &h) {
@@ -135,6 +135,7 @@ namespace mjenum{
          */
         std::set<std::tuple<std::multiset<pure_num_t>, bool>> ans = {};
         if(sum_of_hand(h)==0){
+//            ans.insert({});
             return std::make_tuple(ans, true);
         }
         bool action = false;
@@ -282,13 +283,81 @@ namespace mjenum{
             return  std::make_tuple(ans, false);
         }
     }
-    bool gen_dat_file(){
-        pure_hand_t hand = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+    std::vector<std::tuple<int,int>> dfs_syanten(pure_hand_t& h){
+        std::vector<std::tuple<int,int>> result={std::make_tuple(0,0)};
+        for(int i=0; i<9;i++){
+            if(h[i]>=3){
+                h[i]-=3;
+                auto x = move(dfs_syanten(h));
+                h[i]+=3;
+                for(auto [a, b]: x){
+                    result.push_back(std::make_tuple(a+1, b));
+                }
+            }
+            if(h[i]>=2){
+                h[i]-=2;
+                auto x = move(dfs_syanten(h));
+                h[i]+=2;
+                for(auto [a, b]: x){
+                    result.push_back(std::make_tuple(a, b+1));
+                }
+            }
+        }
+        for(int i=0; i+2<9;i++){
+            if(h[i]>0&&h[i+1]>0&&h[i+2]>0){
+                h[i]--;h[i+1]--;h[i+2]--;
+                auto x = move(dfs_syanten(h));
+                h[i]++;h[i+1]++;h[i+2]++;
+                for(auto [a, b]:x){
+                    result.push_back(std::make_tuple(a+1,b));
+                }
+            }
+
+            if(h[i]>0 && h[i+2]>0){
+                h[i]--; h[i+2]--;
+                auto x = std::move(dfs_syanten(h));
+                h[i]++; h[i+2]++;
+                for(auto [a, b]:x){
+                    result.push_back(std::make_tuple(a, b+1));
+                }
+            }
+        }
+        for(int i=0;i+1<9;i++){
+            if(h[i+1]>0 && h[i]>0){
+                h[i]--; h[i+1]--;
+                auto x = std::move(dfs_syanten(h));
+                h[i]++; h[i+1]++;
+                for(auto [a, b]:x){
+                    result.push_back(std::make_tuple(a, b+1));
+                }
+            }
+        }
+        return std::move(result);
+    }
+    bool compare_syanten(const std::tuple<int,int>& a, const std::tuple<int, int> & b){
+        auto [a1, a2] = a;
+        int val_a = 2*a1+a2;
+        auto [b1, b2] = b;
+        int val_b = 2*b1+b2;
+        if(val_a != val_b)
+            return 2*a1+a2 > 2*b1+b2;
+        else
+            return a1 > b1;
+    }
+    bool compare_syanten_value_equal(const std::tuple<int,int>& a, const std::tuple<int, int> & b){
+        auto [a1, a2] = a;
+        auto [b1, b2] = b;
+        return 2*a1+a2 == 2*b1+b2 && (a1!=a2 || b1!=b2);
+    }
+
+    bool gen_num_dat_file(){
+        pure_hand_t hand;
+        hand.fill(0);
         std::ofstream f;
         // 生成数牌的库
         f.open("mj_num.dat", std::ios::out);
         if(!f.good()){
-            std::cerr << "open file error!" << std::endl;
+            std::cerr << "open mj_num.dat error!" << std::endl;
             return false;
         }
         do{
@@ -297,33 +366,81 @@ namespace mjenum{
                 auto x = dfs_num(hand);
                 if(x.has_value()){
                     auto [ans_tuple, is_empty] = x.value();
-                    if(!is_empty){
-                        f << hand << ' ' << ans_tuple << std::endl;
-                    }
+                    f << hand << ' ' << ans_tuple << std::endl;
                 }
             }
         } while (add<pure_num_t>(hand));
         f.close();
+        return true;
+    }
+    bool gen_wind_dat_file(){
+        pure_hand_t hand;
+        hand.fill(0);
+        std::ofstream f;
         // 生成字牌的库
         f.open("mj_wind.dat", std::ios::out);
         if(!f.good()){
-            std::cerr << "open file error!" << std::endl;
+            std::cerr << "open mj_wind.dat error!" << std::endl;
             return false;
         }
-        hand = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+        hand.fill(0);
         do{
             int sum = sum_of_hand(hand);
             if(judge_sum_legal(sum)){
                 auto x = dfs_wind(hand);
                 if(x.has_value()){
                     auto [ans_tuple, is_empty] = x.value();
-                    if(!is_empty){
-                        f << hand << ' ' << ans_tuple << std::endl;
-                    }
+                    f << hand << ' ' << ans_tuple << std::endl;
                 }
             }
         } while (add<pure_wind_t>(hand));
+        f.close();
         return true;
+    }
+//    bool gen_syanten_dat_file(){
+//        pure_hand_t hand;
+//        hand.fill(0);
+//        std::ofstream f;
+//        f.open("mj_syanten.dat", std::ios::out);
+//        if(!f.good()){
+//            std::cerr << "open syanten.dat error" << std::endl;
+//            return false;
+//        }
+//        hand.fill(0);
+//        do{
+//            int sum = sum_of_hand(hand);
+//            if(sum > 14) continue;
+//            // TODO:
+//            auto x = dfs_syanten(hand);
+//            std::sort(x.begin(), x.end(), compare_syanten);
+//            auto [a1, a2] = x[0];
+//            f << hand << ' ' << a1 << ' ' << a2 << ' ';
+//            if(x.size()>1 && compare_syanten_value_equal(x[0],x[1])){
+//                auto [b1, b2] = x[1];
+//                f << b1 << ' ' << b2 << std::endl;
+//            }
+//            else{
+//                f << a1 << ' ' << a2 << std::endl;
+//            }
+//        } while (add<pure_num_t>(hand));
+//        f.close();
+//        return true;
+//    }
+    bool gen_dat_file(){
+        bool a= true, b= true, c= true;
+        if(!test_file_exist("mj_num.dat")){
+            std::cout << "generate mj_num.dat(about 2min)... " << std::endl;
+            a = gen_num_dat_file();
+        }
+        if(!test_file_exist("mj_wind.dat")){
+            std::cout << "generate mj_wind.dat... " << std::endl;
+            b = gen_wind_dat_file();
+        }
+//        if(!test_file_exist("mj_syanten.dat")){
+//            std::cout << "generate mj_syanten.dat(about 5min)... " << std::endl;
+//            c = gen_syanten_dat_file();
+//        }
+        return a && b && c;
     }
     template<typename pure_type>
     pure_hand_t hand_parser(const std::string& line){
@@ -405,7 +522,7 @@ namespace mjenum{
         if(!f.good()){
             std::cerr << "open \"" << file_name << "\" file error!" << std::endl;
             std::cout <<  "try to generate mahjong data (about 2min)... " << std::flush;
-            gen_dat_file();
+            gen_num_dat_file();
             f.open(file_name, std::ios::in);
             if(!f.good()){
                 std::cerr << "Failed! Please check file system!" << std::endl;
@@ -432,7 +549,7 @@ namespace mjenum{
         if(!f.good()){
             std::cerr << "open \"" << file_name << "\" file error!" << std::endl;
             std::cout <<  "try to generate mahjong data (about 2min)... " << std::flush;
-            gen_dat_file();
+            gen_wind_dat_file();
             f.open(file_name, std::ios::in);
             if(!f.good()){
                 std::cerr << "Failed! Please check file system!" << std::endl;

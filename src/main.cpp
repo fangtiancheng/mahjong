@@ -3,8 +3,10 @@
 
 #include <iostream>
 #include "core.h"
-#include "mjenum_loader.h"
+#include "mjenum.h"
 int main() {
+//    mjenum::gen_dat_file();
+//    return 0;
     MJCore mjcore;
     hand_t h = {
             0,
@@ -16,6 +18,6 @@ int main() {
             0,0,0,0,0,0,0
     };
     mjcore.set_hand(h);
-    mjcore.search();
+    mjcore.dfs(RED_M5, 0);
     return 0;
 }

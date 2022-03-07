@@ -1,4 +1,20 @@
 #include "common.h"
+std::ostream & operator<<(std::ostream& os, const hand_t& h){
+    for(int i=M1; i<=S9;i++){
+        if(i%10==0){
+            os << '\n';
+            continue;
+        }
+        os << h[i];
+    }
+    os << '\n';
+    for(int i=East;i<=Red;i++){
+        os << h[i];
+    }
+    return os;
+}
+
+
 bool is_jyuntyanta(seq_t x){
     // 检查是否纯带幺九
     switch (x) {
@@ -285,4 +301,8 @@ score_level_t score_to_level(int fan){
                                 if(fan>=13) return LEVEL_6;
                                 else return LEVEL_0;
     }
+}
+bool test_file_exist(const std::string& file_name){
+    std::ifstream f(file_name, std::ios::in);
+    return f.good();
 }

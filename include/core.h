@@ -1,11 +1,13 @@
 #ifndef __CORE__
 #define __CORE__
 #include "common.h"
-#include "mjenum_loader.h"
+#include "mjenum.h"
+#include "syanten_enum.h"
 #include <algorithm>
 #include <map>
 #include <queue>
 std::optional<std::vector<std::multiset<seq_t>>> parse_raw_hand(const hand_t&);
+const int MAX_DEPTH=4;
 class MJCore{
 public:
     // [1 1 1 2 3 4 5 5 6 7 8 9 9 9] => uint32_t => (1 1 1) (2 3 4) (6 7 8) (9 9 9) (5 5)
@@ -51,15 +53,15 @@ protected:
     int judge_sanankou(const std::multiset<seq_t>&) const; // 三暗刻
     int judge_tiitoitu() const ; // 七对子
     int count_dora() const ; // 计算宝牌
-
 public:
     MJCore();
+    void dfs(tile_t last_tile, int depth);
     void set_hand(const hand_t&);
     void clear() noexcept ;
     int calc_point(const std::multiset<seq_t>& ) const ;
     void set_jikazi(tile_t);
     void set_bakazi(tile_t);
-    std::array<std::array< hand_t , 7>, 4> search() const;
+//    std::array<std::array< hand_t , 7>, 4> search() const;
 
     //
     bool can_chi(tile_t t) const;
