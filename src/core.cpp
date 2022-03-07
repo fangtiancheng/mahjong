@@ -1,4 +1,5 @@
 #include "core.h"
+#define DEBUG printf("\"%s:%d\"\n", __FILE__, __LINE__);
 bool MJCore::judge_yaku_pair(seq_t x) const {
     // 是否为役牌
     if(is_straight(x)) return false;
@@ -547,28 +548,32 @@ bool MJCore::can_add_kang(tile_t t) const {
         return false;
 }
 std::optional<std::vector<std::multiset<seq_t>>> parse_raw_hand(const hand_t& raw_hand) {
+    std::cout << raw_hand <<std::endl;
     auto[a_idx, b_idx, c_idx, d_idx] = mjenum::hand_to_index(raw_hand);
+    DEBUG
     auto a_iter = MJCore::number_map.find(a_idx);
-    if(a_iter == MJCore::number_map.cend()) return {};
+    if(a_iter == MJCore::number_map.cend()) return {};DEBUG
     auto b_iter = MJCore::number_map.find(b_idx);
-    if(b_iter == MJCore::number_map.cend()) return {};
+    if(b_iter == MJCore::number_map.cend()) return {};DEBUG
     auto c_iter = MJCore::number_map.find(c_idx);
-    if(c_iter == MJCore::number_map.cend()) return {};
+    if(c_iter == MJCore::number_map.cend()) return {};DEBUG
     auto d_iter = MJCore::character_map.find(d_idx);
-    if(d_iter == MJCore::character_map.cend()) return {};
+    if(d_iter == MJCore::character_map.cend()) return {};DEBUG
     const auto& a = a_iter->second;
     const auto& b = b_iter->second;
     const auto& c = c_iter->second;
     const auto& d = d_iter->second;
     std::vector<std::multiset<seq_t>> result;
-    for(const auto& a_i: a){
+    for(const auto& a_i: a){DEBUG
         const auto& [a_pure_seq, a_have_pair] = a_i;
-        for(const auto& b_i: b){
+        for(const auto& b_i: b){DEBUG
             const auto& [b_pure_seq, b_have_pair] = b_i;
-            for(const auto& c_i: c){
+            for(const auto& c_i: c){DEBUG
                 const auto& [c_pure_seq, c_have_pair] = c_i;
-                for(const auto& d_i: d){
+                std::cout << "c_pure_seq.size = " << c_pure_seq.size() << std::endl;
+                for(const auto& d_i: d){DEBUG
                     const auto& [d_pure_seq, d_have_pair] = d_i;
+                    DEBUG
                     if(a_have_pair+b_have_pair+c_have_pair+d_have_pair!=1)
                         continue;
                     std::multiset<seq_t> new_result;
@@ -578,6 +583,7 @@ std::optional<std::vector<std::multiset<seq_t>>> parse_raw_hand(const hand_t& ra
                     new_result.merge(move(mjenum::pure_num_to_seq(c_pure_seq, 2)));
                     new_result.merge(move(mjenum::pure_wind_to_seq(d_pure_seq)));
                     result.push_back(move(new_result));
+                    DEBUG
                 }
             }
         }

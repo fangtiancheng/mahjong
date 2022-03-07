@@ -30,8 +30,8 @@ namespace mjenum{
     std::vector<std::string> split(const std::string &s, const std::string& );
     int sum_of_hand(const pure_hand_t& h);
     bool judge_sum_legal(int sum);
-    std::optional<std::tuple<std::set<std::tuple<std::multiset<pure_num_t>, bool>>, bool>> dfs_num(pure_hand_t& h);
-    std::optional<std::tuple<std::set<std::tuple<std::multiset<pure_wind_t>, bool>>, bool>> dfs_wind(pure_hand_t& h);
+    std::optional<std::set<std::tuple<std::multiset<pure_num_t>, bool>>> dfs_num(pure_hand_t& h);
+    std::optional<std::set<std::tuple<std::multiset<pure_wind_t>, bool>>> dfs_wind(pure_hand_t& h);
     std::vector<std::tuple<int,int>> dfs_syanten(pure_hand_t& h);
     bool compare_syanten(const std::tuple<int,int>&, const std::tuple<int, int> &);
     bool compare_syanten_value_equal(const std::tuple<int,int>&, const std::tuple<int, int> &);

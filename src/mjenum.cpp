@@ -128,15 +128,15 @@ namespace mjenum{
         }
     }
 
-    std::optional<std::tuple<std::set<std::tuple<std::multiset<pure_num_t>, bool>>, bool>> dfs_num(pure_hand_t& h){
+    std::optional<std::set<std::tuple<std::multiset<pure_num_t>, bool>>> dfs_num(pure_hand_t& h){
         /*
          * @param1: 手牌
          * return optional(是否合法){({({手牌序列}, 该手牌序列是否含有对子)}, 手牌是否是空的)}
          */
         std::set<std::tuple<std::multiset<pure_num_t>, bool>> ans = {};
         if(sum_of_hand(h)==0){
-//            ans.insert({});
-            return std::make_tuple(ans, true);
+            ans.insert(std::make_tuple(std::multiset<pure_num_t>{}, false));
+            return ans;
         }
         bool action = false;
         for(int i=0;i < 9;i++){
@@ -146,8 +146,8 @@ namespace mjenum{
                 h[i]+=3;
                 if(_x.has_value()){
                     action = true;
-                    auto [x, is_empty] = _x.value();
-                    if(is_empty){
+                    auto x = _x.value();
+                    if(x.empty()){
                         ans.insert({std::make_tuple(std::multiset<pure_num_t>{static_cast<pure_num_t>(i+_111)}, false)});
                     }
                     else{
@@ -166,9 +166,9 @@ namespace mjenum{
                 auto _x = dfs_num(h);
                 h[i]+=2;
                 if(_x.has_value()){
-                    auto [x, is_empty]= _x.value();
+                    auto x= _x.value();
                     // set<tuple<multiset<pure_num_t>, bool>> x
-                    if(is_empty){
+                    if(x.empty()){
                         action = true;
                         ans.insert({std::make_tuple(std::multiset<pure_num_t>{static_cast<pure_num_t>(i+_11)}, true)});
                     }
@@ -194,8 +194,8 @@ namespace mjenum{
                 h[i]++; h[i+1]++; h[i+2]++;
                 if(_x.has_value()){
                     action = true;
-                    auto [x, is_empty] = _x.value();
-                    if(is_empty){
+                    auto x = _x.value();
+                    if(x.empty()){
                         ans.insert(std::make_tuple(std::multiset<pure_num_t>{static_cast<pure_num_t>(i+_123)}, false));
                     }
                     else{
@@ -214,17 +214,18 @@ namespace mjenum{
             return {};
         }
         else{
-            return  std::make_tuple(ans, false);
+            return  ans;
         }
     }
-    std::optional<std::tuple<std::set<std::tuple<std::multiset<pure_wind_t>, bool>>, bool>> dfs_wind(pure_hand_t& h){
+    std::optional<std::set<std::tuple<std::multiset<pure_wind_t>, bool>>> dfs_wind(pure_hand_t& h){
         /*
          * @param1: 手牌
          * return optional(是否合法){({({手牌序列}, 该手牌序列是否含有对子)}, 手牌是否是空的)}
          */
         std::set<std::tuple<std::multiset<pure_wind_t>, bool>> ans = {};
         if(sum_of_hand(h)==0){
-            return std::make_tuple(ans, true);
+            ans.insert(std::make_tuple(std::multiset<pure_wind_t>{}, false));
+            return ans;
         }
         bool action = false;
         for(int i=0;i < 7;i++){
@@ -234,8 +235,8 @@ namespace mjenum{
                 h[i]+=3;
                 if(_x.has_value()){
                     action = true;
-                    auto [x, is_empty] = _x.value();
-                    if(is_empty){
+                    auto x = _x.value();
+                    if(x.empty()){
                         ans.insert({std::make_tuple(std::multiset<pure_wind_t>{static_cast<pure_wind_t>(i+_EEE)}, false)});
                     }
                     else{
@@ -254,9 +255,9 @@ namespace mjenum{
                 auto _x = dfs_wind(h);
                 h[i]+=2;
                 if(_x.has_value()){
-                    auto [x, is_empty]= _x.value();
+                    auto x = _x.value();
                     // set<tuple<multiset<pure_character>, bool>> x
-                    if(is_empty){
+                    if(x.empty()){
                         action = true;
                         ans.insert({std::make_tuple(std::multiset<pure_wind_t>{static_cast<pure_wind_t>(i+_EE)}, true)});
                     }
@@ -280,7 +281,7 @@ namespace mjenum{
             return {};
         }
         else{
-            return  std::make_tuple(ans, false);
+            return  ans;
         }
     }
     std::vector<std::tuple<int,int>> dfs_syanten(pure_hand_t& h){
@@ -365,8 +366,8 @@ namespace mjenum{
             if(judge_sum_legal(sum)){
                 auto x = dfs_num(hand);
                 if(x.has_value()){
-                    auto [ans_tuple, is_empty] = x.value();
-                    f << hand << ' ' << ans_tuple << std::endl;
+                    auto ans = x.value();
+                    f << hand << ' ' << ans << std::endl;
                 }
             }
         } while (add<pure_num_t>(hand));
@@ -389,8 +390,8 @@ namespace mjenum{
             if(judge_sum_legal(sum)){
                 auto x = dfs_wind(hand);
                 if(x.has_value()){
-                    auto [ans_tuple, is_empty] = x.value();
-                    f << hand << ' ' << ans_tuple << std::endl;
+                    auto ans= x.value();
+                    f << hand << ' ' << ans << std::endl;
                 }
             }
         } while (add<pure_wind_t>(hand));
@@ -429,7 +430,7 @@ namespace mjenum{
     bool gen_dat_file(){
         bool a= true, b= true, c= true;
         if(!test_file_exist("mj_num.dat")){
-            std::cout << "generate mj_num.dat(about 2min)... " << std::endl;
+            std::cout << "generate mj_num.dat(about 3min)... " << std::endl;
             a = gen_num_dat_file();
         }
         if(!test_file_exist("mj_wind.dat")){
@@ -536,7 +537,8 @@ namespace mjenum{
             uint32_t index = hand_encoder(hand);
             mj_map[index] = seq;
         }
-        if(mj_map.size()!=21742){
+        // a little check
+        if(mj_map.size()!=21743){
             std::cerr << "file \"" << file_name << "\" broken, please delete it and rerun the program!";
             exit(1);
         }
@@ -564,7 +566,7 @@ namespace mjenum{
             mj_map[index] = seq;
         }
         // a little check
-        if(mj_map.size() != 497){
+        if(mj_map.size() != 498){
             std::cerr << "file \"" << file_name << "\" broken, please delete it and rerun the program!";
             exit(1);
         }
