@@ -14,6 +14,17 @@
 #define IN
 #define OUT
 typedef std::array<int, 37> hand_t;
+enum tile_t{
+    RED_M5 = 0, // num of M5 red dora(support red dora > 1)
+    M1, M2, M3, M4, M5, M6, M7, M8, M9,
+    RED_P5 = 10,
+    P1, P2, P3, P4, P5, P6, P7, P8, P9,
+    RED_S5 = 20,
+    S1, S2, S3, S4, S5, S6, S7, S8, S9,
+    East = 30, South, West, North,
+    White, Green, Red
+};
+
 std::ostream & operator<<(std::ostream& , const hand_t&);
 enum seq_t{
     M111, M222, M333, M444, M555, M666, M777, M888, M999,
@@ -49,13 +60,14 @@ struct fuuro_t{
      * @minka_seq:P2222
      */
     std::multiset<seq_t> sequences = {};
-    std::set<seq_t> anka_seq = {};
-    std::set<seq_t> minka_seq = {};
+    std::set<seq_t> anka_seq = {}; // 暗杠
+    std::set<seq_t> minka_seq = {}; // 明杠
     void clear() noexcept ;
     inline int fuuro_num() const {
+        // 副露数量
         return sequences.size();
     }
-    bool concealed_hand() const;
+    bool concealed_hand() const; // 是否门清
     int tile_num() const ;
 //    std::tuple<int, int, int> num_five_in_fuuro()const {
 //        // return number of [M5, P5, S5]
@@ -83,18 +95,6 @@ struct fuuro_t{
 //        }
 //        return std::make_tuple(num[0], num[1], num[2]);
 //    }
-};
-
-
-enum tile_t{
-    RED_M5 = 0, // num of M5 red dora(support red dora > 1)
-    M1, M2, M3, M4, M5, M6, M7, M8, M9,
-    RED_P5 = 10,
-    P1, P2, P3, P4, P5, P6, P7, P8, P9,
-    RED_S5 = 20,
-    S1, S2, S3, S4, S5, S6, S7, S8, S9,
-    East = 30, South, West, North,
-    White, Green, Red
 };
 
 seq_t tile_to_triplet(tile_t x);

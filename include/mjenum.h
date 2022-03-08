@@ -48,7 +48,7 @@ namespace mjenum{
     std::tuple<std::multiset<pure_type>, bool> list_parser(const std::string& line);
 
     // generate "mj.dat" in current directory
-    bool gen_num_dat_file();
+    bool gen_num_dat_file(); // generate num.dat file
     bool gen_wind_dat_file();
     // TODO: fix the bug in generate syanten data
 //    bool gen_syanten_dat_file(); // many bugs
