@@ -131,7 +131,7 @@ namespace mjenum{
     std::optional<std::set<std::tuple<std::multiset<pure_num_t>, bool>>> dfs_num(pure_hand_t& h){
         /*
          * @param1: 手牌
-         * return optional(是否合法){({({手牌序列}, 该手牌序列是否含有对子)}, 手牌是否是空的)}
+         * return optional(是否合法){({手牌序列}, 该手牌序列是否含有对子)}
          */
         std::set<std::tuple<std::multiset<pure_num_t>, bool>> ans = {};
         if(sum_of_hand(h)==0){
@@ -219,8 +219,8 @@ namespace mjenum{
     }
     std::optional<std::set<std::tuple<std::multiset<pure_wind_t>, bool>>> dfs_wind(pure_hand_t& h){
         /*
-         * @param1: 手牌
-         * return optional(是否合法){({({手牌序列}, 该手牌序列是否含有对子)}, 手牌是否是空的)}
+         * @param1: 手牌(0~6有效)
+         * return optional(是否合法){({手牌序列}, 该手牌序列是否含有对子)}
          */
         std::set<std::tuple<std::multiset<pure_wind_t>, bool>> ans = {};
         if(sum_of_hand(h)==0){
@@ -443,22 +443,14 @@ namespace mjenum{
 //        }
         return a && b && c;
     }
-    template<typename pure_type>
+
     pure_hand_t hand_parser(const std::string& line){
-        static_assert(std::is_same_v<pure_type, pure_num_t> || std::is_same_v<pure_type, pure_wind_t>, "type error in function line_parser");
         int idx=0;
         while(line[idx] == ' ') idx++;
         pure_hand_t h;
-        if constexpr(std::is_same_v<pure_type, pure_num_t>){
             for(int i=0; i<9; i++){
                 h[i] = line[idx+i] - '0';
             }
-        }
-        else{
-            for(int i=0; i<7; i++){
-                h[i] = line[idx+i] - '0';
-            }
-        }
         return h;
     }
     template <typename pure_type>
@@ -491,11 +483,11 @@ namespace mjenum{
         for(int num_left_sq_br=0, l=0;line[idx+l]!='}'; l++){
             switch (line[idx+l]) {
                 case '[': num_left_sq_br++;
-                idx = idx+l+1; l=0;
+                idx = idx+l; l=0;
                 break;
                 case ']': num_left_sq_br--;
                 if(num_left_sq_br==0){
-                    auto list = list_parser<pure_type>(line.substr( idx,l-1));
+                    auto list = list_parser<pure_type>(line.substr( idx, l));
                     result.insert(move(list));
                 }
                 break;
@@ -511,7 +503,7 @@ namespace mjenum{
         int l = 0;
         while (line[idx+l] != ' ') l++;
         std::string hand_str = line.substr(idx, l);
-        pure_hand_t hand = hand_parser<pure_type>(hand_str);
+        pure_hand_t hand = hand_parser(hand_str);
         idx += l; l = line.size() - idx;
         std::set<std::tuple<std::multiset<pure_type>, bool>> seq = set_parser<pure_type>(line.substr(idx, l));
         return make_tuple(hand, seq);
@@ -564,6 +556,9 @@ namespace mjenum{
             auto[hand, seq] = line_parser<pure_wind_t>(line);
             uint32_t index = hand_encoder(hand);
             mj_map[index] = seq;
+            if(line == "000002000 {[12, ], }"){
+                std::cout << "index = " << index << std::endl;
+            }
         }
         // a little check
         if(mj_map.size() != 498){
@@ -574,17 +569,18 @@ namespace mjenum{
     }
     std::tuple<uint32_t, uint32_t, uint32_t, uint32_t> hand_to_index(const hand_t& h){
         uint32_t index[4] = {0, 0, 0, 0};
-        for(int base = 0; base < 3; base++){
+        int base;
+        for(base = 0; base < 3; base++){
             for(int i=0; i<9;i++){
                 index[base] <<= 3;
-                index[base] |= (h[base*(P1-M1)+i+1] & 0x111);
+                index[base] |= (h[base*(P1-M1)+i+M1]);
             }
         }
-        int base = 3;
-        for(int i=0; i<7;i++){
+        for(int i=East; i<=Red;i++){
             index[base] <<= 3;
-            index[base] |= (h[base*(P1-M1)+i+1] & 0x111);
+            index[base] |= (h[i]);
         }
+        index[base] <<= 6;
         return std::make_tuple(index[0], index[1], index[2], index[3]);
     }
     std::multiset<seq_t> pure_num_to_seq(const std::multiset<pure_num_t>& pure_seq, int base){
@@ -600,5 +596,21 @@ namespace mjenum{
             result.insert(static_cast<seq_t>(c_seq+EEE));
         }
         return std::move(result);
+    }
+    void dump_num_map(const std::map<uint32_t, std::set<std::tuple<std::multiset<pure_num_t>, bool>>>& num_map, std::string file_name){
+        std::ofstream f;
+        f.open(file_name, std::ios::out);
+        for(auto it=num_map.cbegin();it!=num_map.cend();it++){
+            f << hand_decoder(it->first) << ' ' << it->second << std::endl;
+        }
+        f.close();
+    }
+    void dump_wind_map(const std::map<uint32_t, std::set<std::tuple<std::multiset<pure_wind_t>, bool>>>& wind_map, std::string file_name){
+        std::ofstream f;
+        f.open(file_name, std::ios::out);
+        for(auto it=wind_map.cbegin();it!=wind_map.cend();it++){
+            f << hand_decoder(it->first) << ' ' << it->second << std::endl;
+        }
+        f.close();
     }
 }

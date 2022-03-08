@@ -35,6 +35,7 @@ enum seq_t{
     EE, SS, WW, NN, WhiteW, GreenG, RedR,
     EEEE, SSSS, WWWW, NNNN, WhiteWWW, GreenGGG, RedRRR
 };
+std::string seq_to_string(seq_t seq);
 bool is_jyuntyanta(seq_t x);
 bool is_straight(seq_t s);
 bool is_triplet(seq_t s);

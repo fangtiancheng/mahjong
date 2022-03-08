@@ -7,14 +7,12 @@
 #include <map>
 #include <queue>
 std::optional<std::vector<std::multiset<seq_t>>> parse_raw_hand(const hand_t&);
+std::ostream& operator<<(std::ostream& , const std::multiset<seq_t>&);
 const int MAX_DEPTH=4;
-class MJCore{
-public:
-    // [1 1 1 2 3 4 5 5 6 7 8 9 9 9] => uint32_t => (1 1 1) (2 3 4) (6 7 8) (9 9 9) (5 5)
-    static std::map<uint32_t, std::set<std::tuple<std::multiset<mjenum::pure_num_t>, bool>>> number_map;
+extern const std::map<uint32_t, std::set<std::tuple<std::multiset<mjenum::pure_wind_t>, bool>>> character_map;
+extern const std::map<uint32_t, std::set<std::tuple<std::multiset<mjenum::pure_num_t>, bool>>> number_map;
 
-    // [e e e s s s w w w n n n W W] => uint32_t => (e e e) (s s s) (w w w) (n n n) (W W)
-    static std::map<uint32_t, std::set<std::tuple<std::multiset<mjenum::pure_wind_t>, bool>>> character_map;
+class MJCore{
 protected:
     hand_t hand = {}; // 手牌，包括副露，含red dora
     hand_t raw_hand = {}; // 手牌，不包括副露，含red dora

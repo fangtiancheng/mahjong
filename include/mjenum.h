@@ -35,7 +35,7 @@ namespace mjenum{
     std::vector<std::tuple<int,int>> dfs_syanten(pure_hand_t& h);
     bool compare_syanten(const std::tuple<int,int>&, const std::tuple<int, int> &);
     bool compare_syanten_value_equal(const std::tuple<int,int>&, const std::tuple<int, int> &);
-    template <typename pure_type>
+
     pure_hand_t hand_parser(const std::string& line);
 
     template <typename pure_type>
@@ -60,6 +60,9 @@ namespace mjenum{
     EXPORT std::tuple<uint32_t, uint32_t, uint32_t, uint32_t> hand_to_index(const hand_t& h);
     EXPORT std::multiset<seq_t> pure_num_to_seq(const std::multiset<pure_num_t>& pure_seq, int base);
     EXPORT std::multiset<seq_t> pure_wind_to_seq(const std::multiset<pure_wind_t>& pure_character);
+    // for debug
+    void dump_num_map(const std::map<uint32_t, std::set<std::tuple<std::multiset<pure_num_t>, bool>>>&, std::string file_name);
+    void dump_wind_map(const std::map<uint32_t, std::set<std::tuple<std::multiset<pure_wind_t>, bool>>>&, std::string file_name);
 }
 
 #endif

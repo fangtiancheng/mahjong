@@ -1,4 +1,5 @@
 #include "syanten_enum.h"
+#include "mjenum.h"
 namespace syanten{
     using namespace mjenum;
 
@@ -21,7 +22,8 @@ namespace syanten{
                 std::cerr<<"mj_syanten.dat format error" << std::endl;
                 exit(1);
             }
-            uint32_t key = hand_encoder(hand_parser<pure_num_t>(splited_str[0]));
+            pure_hand_t h = mjenum::hand_parser(splited_str[0]);
+            uint32_t key = hand_encoder(h);
             auto value = std::make_tuple(
                     std::stoi(splited_str[1]), std::stoi(splited_str[2]),
                     std::stoi(splited_str[3]), std::stoi(splited_str[4]));

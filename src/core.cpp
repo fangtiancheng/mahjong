@@ -384,8 +384,8 @@ int MJCore::count_dora() const {
     return doras;
 }
 
-std::map<uint32_t, std::set<std::tuple<std::multiset<mjenum::pure_num_t>, bool>>> MJCore::number_map = mjenum::load_num_map();
-std::map<uint32_t, std::set<std::tuple<std::multiset<mjenum::pure_wind_t>, bool>>> MJCore::character_map = mjenum::load_wind_map();
+const std::map<uint32_t, std::set<std::tuple<std::multiset<mjenum::pure_num_t>, bool>>> number_map = mjenum::load_num_map();
+const std::map<uint32_t, std::set<std::tuple<std::multiset<mjenum::pure_wind_t>, bool>>> character_map = mjenum::load_wind_map();
 
 MJCore::MJCore() {}
 void MJCore::set_hand(const hand_t &h) {
@@ -418,7 +418,7 @@ void MJCore::set_bakazi(tile_t b){
 void MJCore::dfs(tile_t last_tile, int depth) {
     if(depth >= MAX_DEPTH) return;
     int syanten_num = syanten::get_syanten(raw_hand, fuuro.fuuro_num());
-    std::cout << syanten_num << std::endl;
+//    std::cout << syanten_num << std::endl;
     if(syanten_num == -1){
         auto seqs_op = parse_raw_hand(raw_hand);
         if(!seqs_op.has_value()){
@@ -431,7 +431,7 @@ void MJCore::dfs(tile_t last_tile, int depth) {
         for(const auto& raw_hand_seq: seqs){
             max_score = std::max(max_score, calc_point(raw_hand_seq));
         }
-        std::cout << "depth = " << depth << ", score = " << max_score << std::endl;
+//        std::cout << "depth = " << depth << ", score = " << max_score << std::endl;
     } else{// 胡了的牌就不参与了
         if(syanten_num+1 +depth < MAX_DEPTH)
         for(int i=M1; i<=Red;i++){
@@ -548,32 +548,29 @@ bool MJCore::can_add_kang(tile_t t) const {
         return false;
 }
 std::optional<std::vector<std::multiset<seq_t>>> parse_raw_hand(const hand_t& raw_hand) {
-    std::cout << raw_hand <<std::endl;
+//    std::cout << "=====raw_hand=====\n" << raw_hand <<std::endl;
     auto[a_idx, b_idx, c_idx, d_idx] = mjenum::hand_to_index(raw_hand);
-    DEBUG
-    auto a_iter = MJCore::number_map.find(a_idx);
-    if(a_iter == MJCore::number_map.cend()) return {};DEBUG
-    auto b_iter = MJCore::number_map.find(b_idx);
-    if(b_iter == MJCore::number_map.cend()) return {};DEBUG
-    auto c_iter = MJCore::number_map.find(c_idx);
-    if(c_iter == MJCore::number_map.cend()) return {};DEBUG
-    auto d_iter = MJCore::character_map.find(d_idx);
-    if(d_iter == MJCore::character_map.cend()) return {};DEBUG
+    auto a_iter = number_map.find(a_idx);
+    if(a_iter == number_map.cend()) return {};
+    auto b_iter = number_map.find(b_idx);
+    if(b_iter == number_map.cend()) return {};
+    auto c_iter = number_map.find(c_idx);
+    if(c_iter == number_map.cend()) return {};
+    auto d_iter = character_map.find(d_idx);
+    if(d_iter == character_map.cend()) return {};
     const auto& a = a_iter->second;
     const auto& b = b_iter->second;
     const auto& c = c_iter->second;
     const auto& d = d_iter->second;
     std::vector<std::multiset<seq_t>> result;
-    for(const auto& a_i: a){DEBUG
+    for(const auto& a_i: a){
         const auto& [a_pure_seq, a_have_pair] = a_i;
-        for(const auto& b_i: b){DEBUG
+        for(const auto& b_i: b){
             const auto& [b_pure_seq, b_have_pair] = b_i;
-            for(const auto& c_i: c){DEBUG
+            for(const auto& c_i: c){
                 const auto& [c_pure_seq, c_have_pair] = c_i;
-                std::cout << "c_pure_seq.size = " << c_pure_seq.size() << std::endl;
-                for(const auto& d_i: d){DEBUG
+                for(const auto& d_i: d){
                     const auto& [d_pure_seq, d_have_pair] = d_i;
-                    DEBUG
                     if(a_have_pair+b_have_pair+c_have_pair+d_have_pair!=1)
                         continue;
                     std::multiset<seq_t> new_result;
@@ -583,11 +580,18 @@ std::optional<std::vector<std::multiset<seq_t>>> parse_raw_hand(const hand_t& ra
                     new_result.merge(move(mjenum::pure_num_to_seq(c_pure_seq, 2)));
                     new_result.merge(move(mjenum::pure_wind_to_seq(d_pure_seq)));
                     result.push_back(move(new_result));
-                    DEBUG
                 }
             }
         }
     }
     if(result.empty()) return {};
     else return result;
+}
+std::ostream& operator<<(std::ostream& os, const std::multiset<seq_t>& seqs){
+    os << '[';
+    for(const auto& seq: seqs){
+        os << seq_to_string(seq) << ", ";
+    }
+    os << ']';
+    return os;
 }
